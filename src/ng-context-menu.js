@@ -8,7 +8,8 @@ angular
   .factory('ContextMenuService', function() {
     return {
       element: null,
-      menuElement: null
+      menuElement: null,
+      container: null
     };
   })
   .directive('contextMenu', ['$document', 'ContextMenuService', function($document, ContextMenuService) {
@@ -21,8 +22,12 @@ angular
       link: function($scope, $element, $attrs) {
         var opened = false;
 
-        function open(event, menuElement) {
+        function open(event, menuElement, container) {
           menuElement.addClass('open');
+
+          if (container) {
+            container.append(menuElement);
+          }
 
           var doc = $document[0].documentElement;
           var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0),
@@ -52,6 +57,9 @@ angular
               close(ContextMenuService.menuElement);
             }
             ContextMenuService.menuElement = angular.element(document.getElementById($attrs.target));
+            if (typeof($attrs.contextMenuContainer) != "undefined") {
+              ContextMenuService.container = angular.element($attrs.contextMenuContainer)
+            }
             ContextMenuService.element = event.target;
             console.log('set', ContextMenuService.element);
 
@@ -59,7 +67,7 @@ angular
             event.stopPropagation();
             $scope.$apply(function() {
               $scope.callback({ $event: event });
-              open(event, ContextMenuService.menuElement);
+              open(event, ContextMenuService.menuElement, ContextMenuService.container);
             });
           }
         });
